@@ -1,0 +1,24 @@
+{
+  "name": "clitr",
+  "version": "1.0.0",
+  "description": "Translate text in your terminal.",
+  "bin": {
+    "clitr": "./bin/clitr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mirrh/clitr"
+  },
+  "keywords": [
+    "translator",
+    "cli",
+    "terminal",
+    "yandex-translate"
+  ],
+  "author": "Max Koloskov <mirrh@yandex.ru>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.8.1",
+    "yandex-translate": "^2.1.0"
+  }
+}

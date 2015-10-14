@@ -1,0 +1,138 @@
+#!/usr/bin/env node
+var apikey = 'trnsl.1.1.20150924T094319Z.6d870378533df324.681ded142232b429db69223eb468283b07cf2b4b';
+
+var c = require('commander');
+var yatr = require('yandex-translate')(apikey);
+var pkg = require('../package.json');
+
+var opts = {
+    from: '',
+    to: '',
+    text: ''
+}
+
+function listLangs() {
+    yatr.getLanguages({ui: 'en'}, function printDirs(err, res) {
+        if (err) {
+            return console.log('Check your Internet connection and try again.');
+        }
+
+        var dirs = res.dirs;
+        console.log('Available translation directions: ');
+        var output = '';
+        var cols = 10;
+        for (var i = 0, len = dirs.length; i < len; ++i) {
+            output += dirs[i] + '   ';
+            if (!((i+1) % cols)) {
+                output += '\n'
+            }
+        }
+        console.log(output);
+
+        var langs = res.langs;
+        output = '';
+        i = 0;
+        cols = 4;
+        for (key in langs) {
+            output += key + ': ' + langs[key] + Array(16 - langs[key].length).join(' ');
+            if (!((i+1) % cols)) {
+                output += '\n';
+            }
+            ++i;
+        }
+        console.log(output);
+
+        process.exit(0);
+    });
+}
+
+function translate(opts, cb) {
+    yatr.translate(opts.text, opts, function yaTranslate(err, res) {
+        if (err) {
+            return console.log('Check your Internet connection and try again.');
+        }
+
+        if (res.code === 200) {
+            console.log(res.text[0].trim());
+
+        }
+
+        if (res.code === 501) {
+            console.log('The specified translation direction is not supported.');
+            console.log('To see available translation directions use "clitr -l".');
+        }
+
+        if (typeof cb === "function") cb();
+    });
+}
+
+
+function runShell() {
+    var readline = require('readline');
+    var rl = readline.createInterface(process.stdin, process.stdout);
+    console.log('You are in translate shell.');
+    console.log('To change translation direction input command "[<from>]:<to>" (e.g. ru:en).');
+    rl.setPrompt('> ');
+    rl.prompt();
+
+    if (opts.text) {
+        console.log(opts.text);
+        translate(opts, function() {
+            rl.prompt();
+        });
+    }
+
+    rl.on('line', function(line) {
+        line = line.trim();
+
+        if (line) {
+            var re = /^([a-z]{2})?:([a-z]{2})$/i;
+            var matches = line.match(re);
+
+            if (matches) {
+                opts.from = matches[1] ? matches[1] : '';
+                opts.to = matches[2];
+                console.log('Translation direction changed to ' +
+                            (opts.from ? opts.from : 'auto') + '->' + opts.to + '.');
+                rl.prompt();
+            } else {
+                opts.text = line;
+                translate(opts, function() {
+                    rl.prompt();
+                });
+            }
+        } else {
+            rl.prompt();
+        }
+
+    }).on('close', function() {
+        console.log('');
+        process.exit(0);
+    });
+}
+
+c
+  .version(pkg.version)
+  .description(pkg.description)
+  .option('-l, --langs', 'list language code')
+  .option('-f, --from <lang>', 'source language (default: auto)')
+  .option('-t, --to <lang>', 'target language (default: en)')
+  .option('-T, --text <text>', 'your text')
+  .option('-s, --shell', 'run translation shell')
+  .parse(process.argv);
+
+if (c.from) opts.from = c.from;
+if (c.to) opts.to = c.to;
+if (c.text) opts.text = c.text;
+
+if (!c.langs) {
+    if (c.shell) {
+        runShell();
+    } else if (c.text) {
+        translate(opts);
+    } else {
+        c.help();
+    }
+} else {
+    listLangs();
+}
