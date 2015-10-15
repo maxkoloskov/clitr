@@ -70,7 +70,7 @@ function translate(opts, cb) {
 function runShell() {
     var readline = require('readline');
     var rl = readline.createInterface(process.stdin, process.stdout);
-    console.log('You are in translate shell.');
+    console.log('You are in translation shell.');
     console.log('To change translation direction input command "[<from>]:<to>" (e.g. ru:en).');
     rl.setPrompt('> ');
     rl.prompt();
