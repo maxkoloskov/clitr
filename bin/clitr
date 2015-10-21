@@ -11,14 +11,22 @@ var opts = {
     text: ''
 }
 
+function green(s) {
+  return '\u001b[32m' + s + '\u001b[39m';
+}
+
+function bold(s) {
+  return '\u001b[1m' + s + '\u001b[22m';
+}
+
 function listLangs() {
     yatr.getLanguages({ui: 'en'}, function printDirs(err, res) {
         if (err) {
-            return console.log('Check your Internet connection and try again.');
+            return console.log(bold('Check your Internet connection and try again.'));
         }
 
         var dirs = res.dirs;
-        console.log('Available translation directions: ');
+        console.log(bold('Available translation directions: '));
         var output = '';
         var cols = 10;
         for (var i = 0, len = dirs.length; i < len; ++i) {
@@ -49,17 +57,17 @@ function listLangs() {
 function translate(opts, cb) {
     yatr.translate(opts.text, opts, function yaTranslate(err, res) {
         if (err) {
-            return console.log('Check your Internet connection and try again.');
+            return console.log(bold('Check your Internet connection and try again.'));
         }
 
         if (res.code === 200) {
-            console.log(res.text[0].trim());
-
+            var translated = res.text[0].trim();
+            console.log(green(translated));
         }
 
         if (res.code === 501) {
-            console.log('The specified translation direction is not supported.');
-            console.log('To see available translation directions use "clitr -l".');
+            console.log(bold('The specified translation direction is not supported.'));
+            console.log(bold('To see available translation directions use "clitr -l".'));
         }
 
         if (typeof cb === "function") cb();
@@ -70,8 +78,8 @@ function translate(opts, cb) {
 function runShell() {
     var readline = require('readline');
     var rl = readline.createInterface(process.stdin, process.stdout);
-    console.log('You are in translation shell.');
-    console.log('To change translation direction input command "[<from>]:<to>" (e.g. ru:en).');
+    console.log(bold('You are in translation shell.'));
+    console.log(bold('To change translation direction input command "[<from>]:<to>" (e.g. ru:en).'));
     rl.setPrompt('> ');
     rl.prompt();
 
@@ -92,8 +100,8 @@ function runShell() {
             if (matches) {
                 opts.from = matches[1] ? matches[1] : '';
                 opts.to = matches[2];
-                console.log('Translation direction changed to ' +
-                            (opts.from ? opts.from : 'auto') + '->' + opts.to + '.');
+                console.log(bold('Translation direction changed to ' +
+                            (opts.from ? opts.from : 'auto') + '->' + opts.to + '.'));
                 rl.prompt();
             } else {
                 opts.text = line;
